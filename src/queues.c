@@ -33,6 +33,8 @@ static GQueue *history   = NULL; /**< history of displayed notifications */
 
 int next_notification_id = 1;
 
+int keep_display = false;
+
 static bool queues_stack_duplicate(struct notification *n);
 static bool queues_stack_by_tag(struct notification *n);
 
@@ -389,10 +391,18 @@ void queues_update(struct dunst_status status)
                 struct notification *n = iter->data;
                 nextiter = iter->next;
 
-                if (queues_notification_is_finished(n, status)){
-                        queues_notification_close(n, REASON_TIME);
-                        iter = nextiter;
-                        continue;
+                if (!keep_display) {
+                        if (n->closed_by_signal) {
+                                queues_notification_close(n, REASON_SIG);
+                                iter = nextiter;
+                                continue;
+                        }
+
+                        if (queues_notification_is_finished(n, status)){
+                                queues_notification_close(n, REASON_TIME);
+                                iter = nextiter;
+                                continue;
+                        }
                 }
 
                 if (!queues_notification_is_ready(n, status, true)) {
@@ -526,5 +536,26 @@ void queues_teardown(void)
         displayed = NULL;
         g_queue_free_full(waiting, teardown_notification);
         waiting = NULL;
+}
+
+/* see queues.h */
+void queues_keep_display(bool value)
+{
+        keep_display = value;
+}
+
+struct notification *queues_find_notification_by_id(int id)
+{
+        GQueue *allqueues[] = { displayed, waiting };
+        for (int i = 0; i < sizeof(allqueues)/sizeof(GQueue*); i++) {
+                for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter;
+                     iter = iter->next) {
+                        struct notification *cur = iter->data;
+                        if (cur->id == id)
+                                return cur;
+                }
+        }
+
+        return NULL;
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

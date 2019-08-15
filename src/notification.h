@@ -80,6 +80,7 @@ struct notification {
         int displayed_height;
         enum behavior_fullscreen fullscreen; //!< The instruction what to do with it, when desktop enters fullscreen
         bool script_run;        /**< Has the script been executed already? */
+        bool closed_by_signal;  /**< has been closed by a signal? */
 
         /* derived fields */
         char *msg;            /**< formatted message */

@@ -335,8 +335,11 @@ static void dbus_cb_CloseNotification(
 {
         guint32 id;
         g_variant_get(parameters, "(u)", &id);
-        queues_notification_close_id(id, REASON_SIG);
-        wake_up();
+        struct notification *n = queues_find_notification_by_id(id);
+        if (n) {
+                n->closed_by_signal = true;
+                wake_up();
+        }
         g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }

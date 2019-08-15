@@ -370,6 +370,14 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                                 win->cur_screen = scr->id;
                         }
                         break;
+                case EnterNotify:
+                        LOG_D("XEvent: processing 'EnterNotify'");
+                        queues_keep_display(true);
+                        break;
+                case LeaveNotify:
+                        LOG_D("XEvent: processing 'LeaveNotify'");
+                        queues_keep_display(false);
+                        break;
                 default:
                         if (!screen_check_event(&ev)) {
                                 LOG_D("XEvent: Ignoring '%d'", ev.type);
@@ -647,7 +655,8 @@ struct window_x11 *x_win_create(void)
         wa.background_pixmap = ParentRelative;
         wa.event_mask =
             ExposureMask | KeyPressMask | VisibilityChangeMask |
-            ButtonReleaseMask | FocusChangeMask| StructureNotifyMask;
+            ButtonReleaseMask | FocusChangeMask| StructureNotifyMask |
+            EnterWindowMask | LeaveWindowMask;
 
         struct screen_info *scr = get_active_screen();
         win->xwin = XCreateWindow(xctx.dpy,

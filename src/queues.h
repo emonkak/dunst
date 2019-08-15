@@ -152,5 +152,9 @@ gint64 queues_get_next_datachange(gint64 time);
  */
 void queues_teardown(void);
 
+void queues_keep_display(bool value);
+
+struct notification *queues_find_notification_by_id(int id);
+
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
